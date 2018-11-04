@@ -47,6 +47,8 @@ public class CustomTransform extends Transform {
         LogUtils.log("inputs Size " + inputs.size());
         LogUtils.log("referencedInputs Size " + referencedInputs.size());
         LogUtils.log("secondaryInputs Size " + secondaryInputs.size());
+        //scope为空，即使referenceScope不是空，outputProvider就会为NULL
+        LogUtils.log("outputProvider " + outputProvider);
         for(TransformInput input : inputs) {
             LogUtils.log(input.toString());
             for(JarInput jarInput : input.getJarInputs()) {
@@ -65,6 +67,30 @@ public class CustomTransform extends Transform {
                 LogUtils.log("directoryInput " + directoryInput.getFile().getAbsolutePath());
                 FileUtils.copyDirectory(directoryInput.getFile(), dest);
             }
+
+        }
+
+        for(TransformInput input : referencedInputs) {
+            LogUtils.log(input.toString());
+            for(JarInput jarInput : input.getJarInputs()) {
+                if(outputProvider == null) continue;
+                File dest = outputProvider.getContentLocation(
+                        jarInput.getFile().getAbsolutePath(),
+                        jarInput.getContentTypes(),
+                        jarInput.getScopes(),
+                        Format.JAR);
+                LogUtils.log("reference jarInput " + jarInput.getFile().getAbsolutePath());
+                FileUtils.copyFile(jarInput.getFile(), dest);
+            }
+            for(DirectoryInput directoryInput : input.getDirectoryInputs()) {
+                if(outputProvider == null) continue;
+                File dest = outputProvider.getContentLocation(directoryInput.getName(),
+                        directoryInput.getContentTypes(), directoryInput.getScopes(),
+                        Format.DIRECTORY);
+                LogUtils.log("reference directoryInput " + directoryInput.getFile().getAbsolutePath());
+                FileUtils.copyDirectory(directoryInput.getFile(), dest);
+            }
+
         }
 
 
@@ -72,12 +98,12 @@ public class CustomTransform extends Transform {
 
     @Override
     public Set<QualifiedContent.ContentType> getInputTypes() {
-        return TransformManager.CONTENT_RESOURCES;
+        return TransformManager.CONTENT_CLASS;
     }
 
     @Override
     public Set<? super QualifiedContent.Scope> getScopes() {
-        return TransformManager.SCOPE_FULL_PROJECT;
+        return TransformManager.EMPTY_SCOPES;
     }
 
     @Override
@@ -87,7 +113,7 @@ public class CustomTransform extends Transform {
 
     @Override
     public Set<? super QualifiedContent.Scope> getReferencedScopes() {
-        return super.getReferencedScopes();
+        return TransformManager.SCOPE_FULL_PROJECT;
     }
 
     @Override
