@@ -5,8 +5,8 @@ package com.quinn.transformnote.plugin;
  */
 public class LogUtils {
 
-    public static void log(String msg) {
-        println("[LogUtils]" + msg)
+    public static void log(String tag, String msg) {
+        println("[" + tag + "] " + msg)
     }
 
 }
